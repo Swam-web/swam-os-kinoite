@@ -14,7 +14,7 @@ socle sans la couche gaming de Bazzite.
 | | Détail |
 |---|---|
 | **Kernel** | CachyOS `kernel-cachyos-lto` (Clang LTO) — COPR `bieszczaders/kernel-cachyos-lto`, remplace le kernel Fedora (pattern `install-kernel-akmods` : shims des scriptlets `kernel-install`, `rpm --erase --nodeps`, versionlock). |
-| **NVIDIA open** | dépôt [negativo17](https://negativo17.org/) : `akmod-nvidia` (userland + modules), kmods **recompilés avec clang contre le kernel CachyOS**. |
+| **NVIDIA (RPMFusion)** | dépôt `rpmfusion-nonfree` — **une seule pile, aucun dépôt tiers** : `akmod-nvidia` + userland `xorg-x11-drv-nvidia` (variantes `.i686` incluses), kmods **recompilés avec clang contre le kernel CachyOS** (BuildRequires `pahole` + `xorg-x11-drv-nvidia-kmodsrc`). |
 | **MediaTek MT7927 / MT6639** | modules WiFi + Bluetooth out-of-tree patchés ([`jetm/mediatek-mt7927-dkms`](https://github.com/jetm/mediatek-mt7927-dkms), version épinglée), précompilés contre le kernel CachyOS, installés dans `/usr/lib/modules/<kver>/updates/`, + le blob firmware BT (`BT_RAM_CODE_MT6639_2_1_hdr.bin`) que `linux-firmware` ne fournit pas encore. |
 | **Addons CachyOS** | `cachyos-settings`, `scx-scheds`, `scx-tools`, `scx-manager`, `ananicy-cpp`, `cachyos-ananicy-rules`. |
 | **Impression / scan / découverte / firewall** | `cups`, `hplip`, `avahi`, `firewalld` (+ `firewall-config`, `firewall-applet`, `tmux`). Services `cups`, `avahi-daemon`, `firewalld`, `podman.socket` activés. |
@@ -45,10 +45,10 @@ Pour un ISO d'installation : voir « Images disque » plus bas.
 ## Structure du dépôt (BlueBuild)
 
 ```
-recipes/recipe.yml                       # recette principale (7 modules)
+recipes/recipe.yml                       # recette principale (12 modules)
 recipes/base/packages.yml                # addons CachyOS, paquets, services
 files/scripts/kernel-cachyos.sh          # COPRs + kernel CachyOS clang-LTO
-files/scripts/nvidia.sh                  # negativo17 open + kmods rpmbuild clang
+files/scripts/nvidia.sh                  # RPMFusion (pilote + kmods rpmbuild clang)
 files/scripts/mt7927.sh                  # MediaTek MT7927 / MT6639
 files/scripts/cleanup.sh                 # nettoyage toolchain / repos de build
 files/system/.../99-fido2.conf           # fido2 dans l'initramfs
@@ -154,5 +154,5 @@ cosign verify --key cosign.pub ghcr.io/swam-web/swam-os-kinoite:latest
 
 [Fedora Kinoite](https://fedoraproject.org/kinoite/) / [Universal Blue](https://universal-blue.org/),
 [BlueBuild](https://blue-build.org/), [CachyOS](https://cachyos.org/) kernel & addons,
-[negativo17](https://negativo17.org/),
+[RPMFusion](https://rpmfusion.org/),
 [jetm/mediatek-mt7927-dkms](https://github.com/jetm/mediatek-mt7927-dkms).

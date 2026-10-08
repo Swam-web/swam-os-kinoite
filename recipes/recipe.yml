@@ -19,7 +19,7 @@ modules:
     scripts:
       - kernel-cachyos.sh
 
-  # NVIDIA open negativo17, kmods rpmbuild clang contre le kernel CachyOS
+  # NVIDIA (RPMFusion), kmods rpmbuild clang contre le kernel CachyOS
   - type: script
     scripts:
       - nvidia.sh

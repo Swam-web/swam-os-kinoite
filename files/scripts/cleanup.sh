@@ -8,6 +8,6 @@ dnf5 -y remove kernel-cachyos-lto-devel
 dnf5 versionlock delete kernel-cachyos-lto-devel || true
 
 ## Do not ship the build repositories enabled on the final image
-rm -f /etc/yum.repos.d/negativo17-fedora-nvidia.repo /etc/yum.repos.d/negativo17-fedora-multimedia.repo
+## (plus aucun dépôt tiers : RPMFusion est la seule pile, elle reste activée)
 dnf5 -y copr disable bieszczaders/kernel-cachyos-lto
 dnf5 -y copr disable bieszczaders/kernel-cachyos-addons
