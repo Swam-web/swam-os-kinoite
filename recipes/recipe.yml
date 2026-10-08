@@ -29,13 +29,35 @@ modules:
     scripts:
       - mt7927.sh
 
+  # Codecs systeme (apps natives) : RPMFusion + acceleration VA-API NVIDIA
+  - type: script
+    scripts:
+      - codecs.sh
+
+  # Wine + winetricks + protontricks
+  - type: script
+    scripts:
+      - wine.sh
+
   # Addons CachyOS, paquets système, services
   - from-file: base/packages.yml
+
+  # Gaming
+  - from-file: base/gaming.yml
 
   # Nettoyage : toolchain de build, repos et COPRs désactivés
   - type: script
     scripts:
       - cleanup.sh
+
+  # Arguments noyau — optimisation jeu
+  #   nowatchdog                            : supprime la surveillance NMI (overhead pur)
+  #   nvidia.NVreg_PreserveVideoMemoryAllocations : corrige la VRAM non liberee
+  #                                          apres une veille (stutter au reveil)
+  - type: kargs
+    kargs:
+      - nowatchdog
+      - nvidia.NVreg_PreserveVideoMemoryAllocations=1
 
   # Initramfs : régénéré pour le kernel CachyOS installé
   # (équivaut au « dracut --kver … --add ostree --add fido2 » du build.sh)

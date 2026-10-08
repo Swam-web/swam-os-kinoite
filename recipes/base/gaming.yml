@@ -1,0 +1,24 @@
+---
+modules:
+  - type: default-flatpaks
+    configurations:
+      - scope: user
+        notify: true
+        install:
+          - com.valvesoftware.Steam
+          - net.lutris.Lutris
+          - com.heroicgameslauncher.hgl
+          - io.github.Faugus.faugus-launcher
+          - com.vysp3r.ProtonPlus
+          - com.github.Matoking.protontricks
+          - io.github.kolunmi.Bazaar
+
+          # Ajouts gaming (IDs vérifiés sur Flathub) :
+          #   Bottles = conteneur Windows (sa propre gestion wine/DXVK)
+          #   Goverlay = interface de configuration MangoHud
+          #   MangoHud (couche Vulkan) = l'overlay FPS dans les jeux Flatpak
+          #   OBS Studio = capture / streaming
+          - com.usebottles.bottles
+          - io.github.benjamimgois.goverlay
+          - org.freedesktop.Platform.VulkanLayer.MangoHud
+          - com.obsproject.Studio

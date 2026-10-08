@@ -66,11 +66,7 @@ disk_config/*.toml                       # config bootc-image-builder (ISO / qco
 ```bash
 cd swam-os-kinoite-bluebuild
 
-# image + ISO en une commande
-sudo -E nix run github:blue-build/cli -- generate-iso \
-  --iso-name swam-os-kinoite.iso recipe recipes/recipe.yml
-
-# ou juste l'image conteneur (pour tester sans l'ISO)
+# image conteneur
 sudo -E nix run github:blue-build/cli -- build recipe recipes/recipe.yml
 ```
 
@@ -95,6 +91,47 @@ sudo -E nix run github:blue-build/cli -- generate-iso \
 
 Ou via GitHub Actions : `Actions → Build disk images → Run workflow` (l'artefact ISO/qcow2 est dans
 le résumé du job, ou sur S3 si configuré).
+
+> ## ⚠️ Construisez l'ISO avec `bootc-image-builder`, PAS avec `bluebuild generate-iso`
+>
+> `bluebuild generate-iso` fabrique son installateur **lorax** et prend par défaut
+> `--variant kinoite` (source BlueBuild : `default_value = "kinoite"`).
+> L'environnement d'installation porte alors `VARIANT_ID=kinoite` ;
+> Anaconda sélectionne le profil `fedora-kinoite`, qui hérite de `fedora-kde` :
+>
+> ```ini
+> [User Interface]
+> hidden_spokes =
+>     NetworkSpoke
+>     PasswordSpoke
+>     UserSpoke
+> ```
+>
+> **Conséquence** : les écrans « Création de l'utilisateur » et « Mot de passe root »
+> sont masqués, l'installation se termine **sans aucun compte**, et l'on reste bloqué
+> sur SDDM sans pouvoir se connecter.
+>
+> `bootc-image-builder` produit un installateur dont l'`os-release` **n'a pas de
+> `VARIANT_ID`** → le profil `fedora` générique s'applique, sans `hidden_spokes` :
+> l'écran de création d'utilisateur est bien présent.
+>
+> ```bash
+> sudo podman run --rm --privileged --pull=newer \
+>   -v ./output:/output \
+>   -v /var/lib/containers/storage:/var/lib/containers/storage \
+>   quay.io/centos-bootc/bootc-image-builder:latest \
+>   --type anaconda-iso \
+>   --config ./disk_config/iso.toml \
+>   --local --chown $(id -u):$(id -g) \
+>   ghcr.io/swam-web/swam-os-kinoite:latest
+> ```
+>
+> Ou via GitHub Actions : `Actions → Build disk images → Run workflow`
+> (`osbuild/bootc-image-builder-action` = le bon installateur).
+>
+> Si vous tenez à `bluebuild generate-iso`, précisez la variante :
+> `--variant server` (création d'utilisateur à l'installation) ou
+> `--variant silverblue` (création au premier démarrage).
 
 ## Signature
 

@@ -23,11 +23,28 @@ modules:
         - avahi
         - tmux
 
+  # Gaming système (RPM) — paquets vérifiés présents dans Fedora 44.
+  # Les variantes .i686 sont celles que réclament les jeux 32 bits de Steam.
+  - type: dnf
+    install:
+      packages:
+        - gamescope        # compositeur/upscaler (FSR, résolutions custom, HDR)
+        - gamemode         # optimisation CPU/GPU à la demande
+        - gamemode.i686
+        - mangohud         # overlay FPS/temps de frame
+        - mangohud.i686
+        - vkBasalt         # post-traitement (CAS, équivalent ReShade)
+        - vkBasalt.i686
+        - goverlay         # interface de configuration MangoHud
+        - vulkan-tools     # vulkaninfo (diagnostic)
+        - steam-devices    # règles udev des manettes (Steam, DualSense, Xbox…)
+
   # Services (no-op si déjà activés par la base)
   - type: systemd
     system:
       enabled:
         - cups.service
+        - scx_loader.service
         - avahi-daemon.service
         - avahi-daemon.socket
         - firewalld.service
