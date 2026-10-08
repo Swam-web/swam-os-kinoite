@@ -1,0 +1,34 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+# Fichier inclus via `from-file:` -> doit contenir une clé `modules:`
+# (schéma module-list-v1.json = objet { modules: [...] }, PAS une liste nue).
+modules:
+  # Addons CachyOS : cachyos-settings fournit son propre zram-generator-defaults,
+  # en conflit avec celui de la base — --allowerasing échange pour la version
+  # CachyOS (d'où le snippet dnf5 plutôt que le module dnf).
+  # Kinoite ne shippe pas scx-scheds/scx-tools : installés depuis le COPR.
+  - type: script
+    snippets:
+      - dnf5 -y install --allowerasing cachyos-settings scx-scheds scx-tools scx-manager ananicy-cpp cachyos-ananicy-rules
+
+  # Impression, scan, découverte et firewall (no-op si déjà dans la base)
+  - type: dnf
+    install:
+      packages:
+        - firewalld
+        - firewall-config
+        - firewall-applet
+        - hplip
+        - cups
+        - avahi
+        - tmux
+
+  # Services (no-op si déjà activés par la base)
+  - type: systemd
+    system:
+      enabled:
+        - cups.service
+        - avahi-daemon.service
+        - avahi-daemon.socket
+        - firewalld.service
+        - podman.socket

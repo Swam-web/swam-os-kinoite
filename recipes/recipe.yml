@@ -1,0 +1,51 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+name: swam-os-kinoite
+description: Kinoite-based custom image with CachyOS kernel, NVIDIA open and MT7927
+base-image: quay.io/fedora-ostree-desktops/kinoite
+image-version: 44
+platforms:
+  - linux/amd64
+modules:
+  # Copie de system_files -> / (équivalent du cp -avf du build.sh d'origine)
+  - type: files
+    files:
+      - source: system
+        destination: /
+
+  # Kernel CachyOS clang-LTO remplaçant le kernel Fedora
+  # (shims kernel-install, rpm --erase --nodeps, versionlock)
+  - type: script
+    scripts:
+      - kernel-cachyos.sh
+
+  # NVIDIA open negativo17, kmods rpmbuild clang contre le kernel CachyOS
+  - type: script
+    scripts:
+      - nvidia.sh
+
+  # MediaTek MT7927 WiFi + MT6639 Bluetooth, précompilés
+  - type: script
+    scripts:
+      - mt7927.sh
+
+  # Addons CachyOS, paquets système, services
+  - from-file: base/packages.yml
+
+  # Nettoyage : toolchain de build, repos et COPRs désactivés
+  - type: script
+    scripts:
+      - cleanup.sh
+
+  # Initramfs : régénéré pour le kernel CachyOS installé
+  # (équivaut au « dracut --kver … --add ostree --add fido2 » du build.sh)
+  - type: initramfs
+
+  # Politiques de signature cosign (rpm-ostree + bootc) — requis par la CI
+  - type: signing
+
+# Caveats (identiques à la version d'origine) :
+# - Secure Boot : le kernel CachyOS et les modules ne sont pas signés
+#   avec une clé Microsoft-trustée. Désactiver Secure Boot ou enroll MOK.
+# - Le kernel CachyOS est clang/LTO : les kmods tiers doivent être
+#   compilés pour cette ABI exacte (fait dans nvidia.sh et mt7927.sh).
