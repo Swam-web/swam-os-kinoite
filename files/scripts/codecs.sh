@@ -1,59 +1,63 @@
 #!/usr/bin/env bash
 #
-# Codecs SYSTÈME — pour les applications *natives*
-# (Plasma/KWin, Firefox RPM, VLC RPM, Kdenlive, mpv, Elisa…)
+# Codecs SYSTÈME — pour les applications *natives* (image NVIDIA).
 #
-# Kinoite n'active pas RPMFusion : sans ces paquets, pas de lecture H.264/H.265,
-# pas d'accélération matérielle, pas de DVD chiffré.
+# Cette image est bâtie sur la pile **negativo17** (pilote NVIDIA + multimédia).
+# RPMFusion n'est PAS utilisé ici : les deux dépôts fournissent les mêmes
+# paquets (mesa, libva, ffmpeg…) et les mélanger produit des conflits de
+# versions. Règle appliquée : tout vient de negativo17 + Fedora.
+#
+# Vérifié dans les dépôts au moment de l'écriture :
+#   ffmpeg                       8.1.3    [fedora-multimedia]
+#   libva (x86_64 ET i686)       2.24.1   [fedora-multimedia]
+#   mesa-dri-drivers.i686        26.2.3   [fedora-multimedia]
+#   mesa-vulkan-drivers.i686     26.2.3   [fedora-multimedia]
+#   gstreamer1-plugins-ugly      1.28.7   [fedora-multimedia]
+#   libdvdcss                    1.6.0    [fedora-multimedia]  (pas de dépôt tainted)
+#   libva-nvidia-driver(.i686)   0.0.18   [Fedora]
+#   gstreamer1-plugins-bad-freeworld et mesa-va-drivers-freeworld sont propres
+#   à RPMFusion : ABSENTS ici, donc non utilisés (et inutiles en NVIDIA).
+#
 # Les codecs des applications FLATPAK sont un autre monde : voir recipes/base/codecs.yml
-#
-# Toutes les commandes ci-dessous viennent de la doc officielle RPMFusion
-# (Howto/Multimedia), pas d'invention.
 set -ouex pipefail
 
-FEDORA="$(rpm -E %fedora)"
-
-### 1. Dépôts RPMFusion : free + nonfree (URLs officielles de la doc)
-dnf5 -y install \
-    "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-${FEDORA}.noarch.rpm" \
-    "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-${FEDORA}.noarch.rpm"
-
-### 1b. Dépôt tainted (nécessaire pour libdvdcss) : par NOM de paquet.
-###     Il n'existe PAS d'URL « -release-tainted » dans free/ (404 vérifié en
-###     build) ; le paquet est fourni par rpmfusion-free, activé juste au-dessus.
-###     C'est la procédure exacte de la doc RPMFusion.
-dnf5 -y install rpmfusion-free-release-tainted
+### 1. Aucun dépôt à activer : negativo17-nvidia et negativo17-multimedia sont
+###    mis en place par nvidia.sh. On vérifie simplement qu'ils sont là.
+for r in /etc/yum.repos.d/negativo17-fedora-multimedia.repo \
+         /etc/yum.repos.d/negativo17-fedora-nvidia.repo; do
+    [[ -f "$r" ]] || { echo "ERREUR : dépôt negativo17 manquant -> $r"; exit 1; }
+done
 
 ### 2. openh264 vit dans un dépôt Fedora désactivé par défaut
 dnf5 config-manager setopt fedora-cisco-openh264.enabled=1
 
-### 3. ffmpeg complet (remplace le ffmpeg-free privé des codecs brevetés).
-###    Après ce swap, libavcodec-freeworld est inutile et redondant (doc RPMFusion).
+### 3. ffmpeg complet (fedora-multimedia fournit le ffmpeg non bridé)
 dnf5 -y swap ffmpeg-free ffmpeg --allowerasing
 
-### 4. Compléments multimédia / GStreamer (commande officielle RPMFusion)
-dnf5 -y install @multimedia --setopt="install_weak_deps=False" --exclude=PackageKit-gstreamer-plugin
+### 4. Compléments GStreamer (fedora-multimedia)
+dnf5 -y install gstreamer1-plugins-ugly gstreamer1-plugin-libav
 
 ### 5. H.264 (openh264) + lecture des DVD chiffrés
 dnf5 -y install gstreamer1-plugin-openh264 libdvdcss
 
 ### 6. Accélération matérielle — NVIDIA
 ###    Le pilote propriétaire ne fait pas de VA-API nativement : libva-nvidia-driver
-###    fait le pont NVDEC/NVENC -> VA-API (doc RPMFusion).
+###    fait le pont NVDEC/NVENC -> VA-API.
 dnf5 -y install libva-nvidia-driver
-#
-# Si la machine a AUSSI un iGPU AMD/Intel, décommente :
-# dnf5 -y install mesa-va-drivers-freeworld
-# dnf5 -y swap mesa-vulkan-drivers mesa-vulkan-drivers-freeworld
 
 ### 7. Pilotes vidéo 32 bits — requis par Steam pour les jeux 32 bits.
 ###    Le Flatpak Steam apporte son runtime 32 bits, mais PAS les pilotes de l'hôte.
-dnf5 -y install mesa-dri-drivers.i686 mesa-vulkan-drivers.i686 vulkan-loader.i686 libva.i686
+###    libva est demandé pour les DEUX architectures dans la même transaction :
+###    fedora-multimedia les fournit en 2.24.1 identiques, ce qui évite le conflit
+###    de fichiers entre le libva.x86_64 de la base et un libva.i686 plus récent.
+dnf5 -y install libva libva.i686
+dnf5 -y install mesa-dri-drivers.i686 mesa-vulkan-drivers.i686 mesa-libEGL.i686 vulkan-loader.i686
 dnf5 -y install libva-nvidia-driver.i686
 
 ### 8. Contrôle : le build échoue plutôt que de livrer une image sans codecs
 for p in ffmpeg libdvdcss gstreamer1-plugin-openh264 libva-nvidia-driver \
-         mesa-dri-drivers.i686 mesa-vulkan-drivers.i686; do
+         libva.i686 mesa-dri-drivers.i686 mesa-vulkan-drivers.i686 \
+         libva-nvidia-driver.i686; do
     rpm -q "$p" >/dev/null 2>&1 || { echo "ERREUR : paquet manquant -> $p"; exit 1; }
 done
-echo "codecs système : OK"
+echo "codecs système (nvidia) : OK"
