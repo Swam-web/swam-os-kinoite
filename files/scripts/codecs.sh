@@ -13,11 +13,16 @@ set -ouex pipefail
 
 FEDORA="$(rpm -E %fedora)"
 
-### 1. Dépôts RPMFusion : free + nonfree + tainted (tainted = libdvdcss)
+### 1. Dépôts RPMFusion : free + nonfree (URLs officielles de la doc)
 dnf5 -y install \
     "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-${FEDORA}.noarch.rpm" \
-    "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-${FEDORA}.noarch.rpm" \
-    "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-tainted-${FEDORA}.noarch.rpm"
+    "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-${FEDORA}.noarch.rpm"
+
+### 1b. Dépôt tainted (nécessaire pour libdvdcss) : par NOM de paquet.
+###     Il n'existe PAS d'URL « -release-tainted » dans free/ (404 vérifié en
+###     build) ; le paquet est fourni par rpmfusion-free, activé juste au-dessus.
+###     C'est la procédure exacte de la doc RPMFusion.
+dnf5 -y install rpmfusion-free-release-tainted
 
 ### 2. openh264 vit dans un dépôt Fedora désactivé par défaut
 dnf5 config-manager setopt fedora-cisco-openh264.enabled=1
