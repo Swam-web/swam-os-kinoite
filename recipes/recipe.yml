@@ -54,8 +54,18 @@ modules:
   #   nowatchdog                            : supprime la surveillance NMI (overhead pur)
   #   nvidia.NVreg_PreserveVideoMemoryAllocations : corrige la VRAM non liberee
   #                                          apres une veille (stutter au reveil)
+  #   rd.driver.blacklist=nouveau + modprobe.blacklist=nouveau :
+  #                                          empêche nouveau de prendre le GPU
+  #                                          avant nvidia (ecran noir au boot).
+  #                                          Normalement posés par le scriptlet
+  #                                          akmod-nvidia, qui est skippé
+  #                                          (--noscripts) dans nvidia.sh.
+  #   nvidia-drm.modeset=1                  : KMS obligatoire pour Wayland/NVIDIA
   - type: kargs
     kargs:
+      - rd.driver.blacklist=nouveau
+      - modprobe.blacklist=nouveau
+      - nvidia-drm.modeset=1
       - nowatchdog
       - nvidia.NVreg_PreserveVideoMemoryAllocations=1
 

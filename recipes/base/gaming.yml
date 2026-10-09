@@ -17,8 +17,11 @@ modules:
           #   Bottles = conteneur Windows (sa propre gestion wine/DXVK)
           #   Goverlay = interface de configuration MangoHud
           #   MangoHud (couche Vulkan) = l'overlay FPS dans les jeux Flatpak
+          #     -> ref complète obligatoire : l'ID seul matche plusieurs refs
+          #        (x86_64 + aarch64) et fait échouer flatpak --noninteractive
+          #        ("Multiple refs match"), ce qui annule TOUTE l'installation
           #   OBS Studio = capture / streaming
           - com.usebottles.bottles
           - io.github.benjamimgois.goverlay
-          - org.freedesktop.Platform.VulkanLayer.MangoHud
+          - org.freedesktop.Platform.VulkanLayer.MangoHud/x86_64/stable
           - com.obsproject.Studio
