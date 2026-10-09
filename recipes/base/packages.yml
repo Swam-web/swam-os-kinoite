@@ -22,6 +22,7 @@ modules:
         - cups
         - avahi
         - tmux
+        - distrobox
 
   # Gaming système (RPM) — paquets vérifiés présents dans Fedora 44.
   # Les variantes .i686 sont celles que réclament les jeux 32 bits de Steam.
