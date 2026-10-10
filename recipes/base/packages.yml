@@ -18,6 +18,7 @@ modules:
         - firewalld
         - firewall-config
         - firewall-applet
+        - hplip-gui
         - hplip
         - cups
         - avahi
