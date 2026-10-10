@@ -10,8 +10,12 @@ set -ouex pipefail
 KERNEL_VERSION="$(rpm -q kernel-cachyos-lto --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')"
 
 ### 1. RPMFusion free + nonfree : source unique pour cette image
+### --refresh : les métadonnées dnf en cache (< 48h) peuvent référencer des
+### versions de paquets que Fedora vient de retirer des miroirs (supplantées
+### par une nouvelle version, ex: mesa) -> "All mirrors were tried". Forcer
+### le refresh rend le build insensible à ce churn amont.
 FEDORA="$(rpm -E %fedora)"
-dnf5 -y install \
+dnf5 -y --refresh install \
     "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-${FEDORA}.noarch.rpm" \
     "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-${FEDORA}.noarch.rpm"
 

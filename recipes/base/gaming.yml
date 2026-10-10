@@ -20,8 +20,13 @@ modules:
           #     -> ref complète obligatoire : l'ID seul matche plusieurs refs
           #        (x86_64 + aarch64) et fait échouer flatpak --noninteractive
           #        ("Multiple refs match"), ce qui annule TOUTE l'installation
+          #     -> branche = version du runtime freedesktop, PAS "stable"
+          #        (inexistant -> "Ref not found" -> les 11 refs annulées en bloc).
+          #        Branches vérifiées dans le summary Flathub : 21.08..26.08.
+          #        25.08 + 26.08 couvrent les deux runtimes courants.
           #   OBS Studio = capture / streaming
           - com.usebottles.bottles
           - io.github.benjamimgois.goverlay
-          - org.freedesktop.Platform.VulkanLayer.MangoHud/x86_64/stable
+          - org.freedesktop.Platform.VulkanLayer.MangoHud/x86_64/25.08
+          - org.freedesktop.Platform.VulkanLayer.MangoHud/x86_64/26.08
           - com.obsproject.Studio

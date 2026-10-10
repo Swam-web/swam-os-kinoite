@@ -36,7 +36,8 @@ dnf5 versionlock delete kernel kernel-devel kernel-devel-matched kernel-core ker
 
 ## Install the CachyOS kernel and its headers
 ## (devel pulls clang/lld/make and provides kernel-devel-uname-r for module builds)
-dnf5 -y install kernel-cachyos-lto kernel-cachyos-lto-devel
+## --refresh : cf. nvidia.sh — métadonnées en cache vs versions retirées du COPR
+dnf5 -y --refresh install kernel-cachyos-lto kernel-cachyos-lto-devel
 
 ## Lock the kernel packages so nothing replaces them during the rest of the build
 dnf5 versionlock add kernel-cachyos-lto kernel-cachyos-lto-devel
